@@ -1,0 +1,46 @@
+---
+title: "Rweka_manual"
+author: "stkarlos"
+date: "September 3, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+
+
+```{r , echo=TRUE, warning=FALSE}
+require(RWeka)
+## Use some example data.
+w <- read.arff(system.file("arff","weather.nominal.arff",
+package = "RWeka"))
+
+## Identify a decision tree.
+m <- J48(play~., data = w)
+
+```
+
+The details of the decision tree and the evaluation of 10-cross validation can also be implemented through the following segment:
+```{r}
+m
+
+## Use 10 fold cross-validation.
+e <- evaluate_Weka_classifier(m, cost = matrix(c(0,2,1,0), ncol = 2),
+						numFolds = 10, complexity = TRUE,
+						seed = 123, class = TRUE)
+
+e
+
+summary(e)
+
+e$details
+
+```
+
+If we want to see the play distibution by level in play, we can make it by a stacked bar plot.
+
+```{r, echo=TRUE}
+require(ggplot2)
+ggplot(w, aes(x= windy, fill = play )) + geom_bar(position = "dodge")
+```
+
