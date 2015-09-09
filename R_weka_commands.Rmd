@@ -27,7 +27,7 @@ w <- read.arff(system.file("arff","weather.nominal.arff",
 summary(w)
 
 ## Δημιουργία ενός δένδρου απόφασης j48
-m <- J48( play~., data = w )
+m <- J48( play ~ ., data = w )
 
 ```
 <br>
@@ -85,9 +85,238 @@ Apriori(x, Weka_control(N = 20))
 # Πληροφόρηση για τις κατηγορίες του συνόλου δεδομένων iris
 summary(iris)
 
-# Υπολογισμός του Gain για κάθε για την κλάση πρόβλεψης του συνόλου δεδομένων (Species)
+# Υπολογισμός του κέρδους πληροφορίας και δείκτη κέρδους για κάθε για την κλάση πρόβλεψης του συνόλου δεδομένων (Species)
 InfoGainAttributeEval(Species ~ . , data = iris)
+GainRatioAttributeEval(Species ~ . , data = iris)
+
+```
+<br><br>
+
+#### ## Παραδείγματα υλοποίησης μοντέλων προσέγγισης μέσω των εκμαθητών του Weka
+```{r, echo=TRUE}
+
+## Παράδειγμα εφαρμογής Linear regression - Γραμμικής Οπισθοδρόμησης
+## Χρήση του συνόλου δεδομένων 'mtcars' το οποίο περιέχεται στο περιβλαλλον της R
+LinearRegression(mpg ~ ., data = mtcars)
+
+## Σύγκριση με τη συνάρτηση step της  R για την προσέγγιση ενός μοντέλου περιγραφής:
+step(lm(mpg ~ ., data = mtcars), trace = 0)
+
+## Χρήση του συνόλου δεδομένων 'chickwts' το οποίο περιέχεται στο περιβλαλλον της R
+LinearRegression(weight ~ feed, data = chickwts)
 
 
+## Παράδειγμα εφαρμογής Logistic regression:
+## Χρήση του συνόλου δεδομένων 'infert' το οποίο περιέχεται στο περιβλαλλον της R
+STATUS <- factor(infert$case, labels = c("control", "case"))
+Logistic(STATUS ~ spontaneous + induced, data = infert)
+
+## Σύγκριση με τη συνάρτηση gml (Generalized Linear Models) της  R για την προσέγγιση ενός μοντέλου περιγραφής
+glm(STATUS ~ spontaneous + induced, data = infert, family = binomial())
+
+
+## Παράδειγμα εφαρμογής της μεθόδου SMO με ορίσματα της επιλογής μας, με χρήση 2 διαφορετικών τρόπων
+## Χρήση αλγορίθμου βελτιστοποίησης μέσω αναζητησης διαδοχικών ελαχίστων για την εκπαίδευση ενός ταξινομητή διανυσμάτων υποστήριξης, χρησιμοποιώντας έναν RBF πυρήνα με συγκεκριμένο -G σε σύγκριση με τον default πολυωνυμικό πυρήνα
+
+SMO(Species ~ ., data = iris,
+      control = Weka_control(K =
+      list("weka.classifiers.functions.supportVector.RBFKernel", G = 2)))
+
+## Ορίζοντας τις παραμέτρους σαν στοιχεία μιας λίστας, πετυχαίνουμε το ίδιο αποτέλεσμα με προηγουμένως
+SMO(Species ~ ., data = iris,
+      control = Weka_control(K = list("RBFKernel", G = 2)))
+
+## Default ορισμός του SMO για το ίδιο πρόβλημα
+SMO(Species ~ ., data = iris)
+
+```
+<br><br>
+
+#### Παραδείγματα κατηγοριοποίησης μέσω των μετα-εκμαθητών του Weka
+
+##### Ενδεικτική χρήση της μεθόδου AdaBoostM1 με 2 διαφορετικούς εκμαθητές (base-classifiers)
+
+## 1. AdaBoostM1 μαζί με decision stumps
+```{r, echo=TRUE}
+
+m1 <- AdaBoostM1(Species ~ ., data = iris,
+      control = Weka_control(W = "DecisionStump"))
+
+table(predict(m1), iris$Species)
+summary(m1) # εδώ πραγματοποιείται χρήση της συνάρτησης evaluate_Weka_classifier()
+```
+
+
+## 2. AdaBoostM1 μαζί με j48
+```{r, echo=TRUE}
+
+## Εναλλακτικός τρόπος περάσματος ορισμάτων στους μετα-εκμαθητές (εξαιρείται ο Stacking)
+m2 <- AdaBoostM1(Species ~ ., data = iris,
+control = Weka_control(W = list(J48, M = 30)))
+```
+
+
+#### Στη συνέχεια εξετάζονται οι εκμαθητές που στηρίζονται σε κανόνες
+
+##### Επιλέχθηκαν και παρουσιάζονται οι M5Rules και PART ταξινομητές
+```{r, echo=TRUE}
+
+## M5Rules
+r1 <- M5Rules(mpg ~ ., data = mtcars)
+r1
+summary(r1)
+## PART
+m <- PART(Species ~ ., data = iris)
+m
+summary(m)
+```
+<br><br>
+
+#### Έπειτα, εξετάζονται οι εκμαθητές που στηρίζονται σε δένδρα απόφασης
+
+##### Επιλέχθηκαν και παρουσιάζονται οι j48, M5P, και LMT ταξινομητές
+```{r, echo=TRUE}
+
+## j48
+m1 <- J48(Species ~ ., data = iris)
+
+## Εμφάνιση χρήσιμων πληροφοριών
+m1
+summary(m1) # εδώ πραγματοποιείται χρήση της συνάρτησης evaluate_Weka_classifier()
+table(iris$Species, predict(m1)) 
+
+## οπτικοποίηση μέσω του του partykit package
+if(require("partykit", quietly = TRUE))   plot(m1)
+
+
+## Χρησιμοποίηση διαφορετικών συνόλων δεδομένων
+
+## J48
+DF2 <- read.arff(system.file("arff", "contact-lenses.arff",
+                            package = "RWeka"))
+
+m2 <- J48(`contact-lenses` ~ ., data = DF2)
+
+##Εμφάνιση χρήσιμων πληροφοριών
+m2
+summary(m2) # εδώ πραγματοποιείται χρήση της συνάρτησης evaluate_Weka_classifier()
+table(DF2$'contact-lenses', predict(m2))
+
+if(require("partykit", quietly = TRUE))    plot(m2)
+
+## M5P
+DF3 <- read.arff(system.file("arff", "cpu.arff",
+                             package = "RWeka"))
+
+m3 <- M5P(class ~ ., data = DF3)
+m3
+summary(m3) # εδώ πραγματοποιείται χρήση της συνάρτησης evaluate_Weka_classifier()
+# table(DF3$'class', predict(m3)) # παράλειψη λόγω μεγέθους
+
+if(require("partykit", quietly = TRUE))  plot(m3)
+
+## Logistic Model Tree.
+DF4 <- read.arff(system.file("arff", "weather.arff",
+                             package = "RWeka"))
+
+m4 <- LMT(play ~ ., data = DF4)
+m4
+table(DF4$play, predict(m4))
+summary(m4) # εδώ πραγματοποιείται χρήση της συνάρτησης evaluate_Weka_classifier()
+
+## Επίδειξη ενός μεγαλύτερης κλίμακας παραδείγματος το οποίο απαιτεί κλάδεμα
+
+if(require("mlbench", quietly = TRUE)
+   && require("partykit", quietly = TRUE)) {
+  
+## Πρόβλεψη της κλάσης περί ύπαρξης ή όχι διαβήτη για Pima Ινδιάνες
+  
+    data("PimaIndiansDiabetes", package = "mlbench")
+  
+## Ταίριασμα ενός J48 δένδρου με μειωμένο σφάλμα κλαδέματος
+  
+    m5 <- J48(diabetes ~ ., data = PimaIndiansDiabetes,
+          control = Weka_control(R = TRUE))
+
+    plot(m5)
+
+                                          }
+```
+
+
+#### Στο επόμενο χωρίο εξετάζεται η διαδικασία συσταδοποίησης
+
+##### Επιλέχθηκαν και παρουσιάζονται οι SimpleKMeans και FarthestFirst συσταδοποιητές
+```{r, echo=TRUE}
+
+# Δίνεται σαν όρισμα και στις 2 περιπτώσεις το -Ν το οποίο αποτελεί το πλήθος των διαφορετικών συστάδων
+
+# SimpleKMeans
+cl1 <- SimpleKMeans(iris[, -5], Weka_control(N = 3))
+
+cl1
+table(predict(cl1), iris$Species)
+
+# FartherFirst
+cl2 <- FarthestFirst(iris[, -5],  Weka_control(N = 3))
+
+cl2
+table(predict(cl2), iris$Species)
+
+```
+
+#### Επιπλέον εξετάζεται η διαδικασία ενημέρωσης του χρήση για τις διαθέσιμες επιλογές των ταξινομητών και των διάφορων στοιχείων του Weka
+```{r, echo=TRUE}
+
+## Ερώητηση για τις επιλογές του J48
+WOW("J48")
+
+## Εκπαίδευση ενός j48 δένδρου για το σύνολο δεδομένων iris
+J48(Species ~ ., data = iris)
+
+## Εκπαίδευση ενός j48 δένδρου για το σύνολο δεδομένων iris με την επιλογή
+## reduced error pruning (-R) και το minimum number of instances να έχει οριστεί ίσο με 5 (-M 5)
+J48(Species ~ ., data = iris, control = Weka_control(R = TRUE, M = 5))
+```
+
+#### Στη συνέχεια παρουσιάζεται η διαδικασία κλήσης και χρήση των φίλτρων του Weka
+```{r, echo=TRUE}
+
+## Διάβασμα του συνόλου δεδομένων weather
+w <- read.arff(system.file("arff","weather.arff",
+                  package = "RWeka"))
+
+## Κανονικοποίηση - Normalize (response irrelevant)
+m1 <- Normalize( ~ . , data = w )
+m1
+
+## Διακριτοποίηση - Discretize
+m2 <- Discretize(play ~., data = w)
+m2
+```
+
+#### Τέλος, αξίζει να αναφερθεί πως παέχεται η δυνατότητα δημιουργίας διεπαφών από τον ίδιο το χρήση προα αντικέιμενα του Weka
+```{r, echo=TRUE}
+
+## Δημιουργια διεπαφής προς τον ταξινομητή Naive Bayes του Weka
+NB <- make_Weka_classifier("weka/classifiers/bayes/NaiveBayes")
+
+## Μέθοδος εκτύπωσης της διεπαφής (print method)
+NB
+
+## Χρήση του Weka Option Wizard για περισσότερες πληροφορίες
+WOW(NB)
+
+## Παράδειγμα χρήσης της διεπαφής
+if(require("e1071", quietly = TRUE) &&
+require("mlbench", quietly = TRUE)) {
+  
+                data("HouseVotes84", package = "mlbench")
+                model <- NB(Class ~ ., data = HouseVotes84)
+                
+                predict(model, HouseVotes84[1:10, -1])
+                predict(model, HouseVotes84[1:10, -1], type = "prob")
+                
+                                    }
 ```
 
