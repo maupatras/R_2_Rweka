@@ -246,8 +246,8 @@ if(require("mlbench", quietly = TRUE)
     m5 <- J48(diabetes ~ ., data = PimaIndiansDiabetes,
           control = Weka_control(R = TRUE))
 
-    plot(m5)
-
+## plot(m5)
+## αποφυγή σχεδιασμού τόσο μεγάλων δένδρων χωρίς να παραμετροποιηθεί για την οθόνη του εκάστοτε χρήση
                                           }
 ```
 <br><br>
