@@ -294,7 +294,7 @@ InfoGainAttributeEval(Species ~ . , data = iris)</code></pre>
 </div>
 <div id="--------weka." class="section level4">
 <h4>Παραδείγματα υλοποίησης μοντέλων προσέγγισης μέσω των εκμαθητών του Weka.</h4>
-<pre class="r"><code>## Παράδειγμα εφαρμογής Linear regression - Γραμμικής Οπισθοδρόμησης
+<pre class="r"><code>## Παράδειγμα εφαρμογής Linear regression - Γραμμικής Παλινδρόμησης
 ## Χρήση του συνόλου δεδομένων 'mtcars' το οποίο περιέχεται στο περιβλαλλον της R
 LinearRegression(mpg ~ ., data = mtcars)</code></pre>
 <pre><code>## 
@@ -603,8 +603,8 @@ SMO(Species ~ ., data = iris)</code></pre>
 <div id="-------weka" class="section level4">
 <h4>Παραδείγματα κατηγοριοποίησης μέσω των μετα-εκμαθητών του Weka</h4>
 <p><br></p>
-<div id="----adaboostm1--2---base-classifiers." class="section level5">
-<h5>Ενδεικτική χρήση της μεθόδου AdaBoostM1 με 2 διαφορετικούς εκμαθητές (base-classifiers).</h5>
+<div id="----adaboostm1--2----base-classifiers." class="section level5">
+<h5>Ενδεικτική χρήση της μεθόδου AdaBoostM1 με 2 διαφορετικούς αλγόριθμους μάθησης (base-classifiers).</h5>
 <p><br></p>
 </div>
 <div id="adaboostm1---decision-stumps." class="section level5">
@@ -643,14 +643,14 @@ table(predict(m1), iris$Species)</code></pre>
 </div>
 <div id="adaboostm1---j48." class="section level5">
 <h5>2. AdaBoostM1 μαζί με j48.</h5>
-<pre class="r"><code>## Εναλλακτικός τρόπος περάσματος ορισμάτων στους μετα-εκμαθητές (εξαιρείται ο Stacking)
+<pre class="r"><code>## Εναλλακτικός τρόπος περάσματος ορισμάτων στους μετα-αλγόριθμους μάθησης (εξαιρείται ο Stacking)
 m2 &lt;- AdaBoostM1(Species ~ ., data = iris,
 control = Weka_control(W = list(J48, M = 30)))</code></pre>
 <p><br><br></p>
 </div>
 </div>
-<div id="--------" class="section level4">
-<h4>Στη συνέχεια εξετάζονται οι εκμαθητές που στηρίζονται σε κανόνες</h4>
+<div id="---------" class="section level4">
+<h4>Στη συνέχεια εξετάζονται οι αλγόριθμοι μάθησης που στηρίζονται σε κανόνες</h4>
 <p><br></p>
 <div id="----m5rules--part-." class="section level5">
 <h5>Επιλέχθηκαν και παρουσιάζονται οι M5Rules και PART ταξινομητές.</h5>
@@ -726,8 +726,8 @@ m</code></pre>
 <p><br><br></p>
 </div>
 </div>
-<div id="--------" class="section level4">
-<h4>Έπειτα, εξετάζονται οι εκμαθητές που στηρίζονται σε δένδρα απόφασης</h4>
+<div id="---------" class="section level4">
+<h4>Έπειτα, εξετάζονται οι αλγόριθμοι μάθησης που στηρίζονται σε δένδρα απόφασης</h4>
 <div id="----j48-m5p--lmt-." class="section level5">
 <h5>Επιλέχθηκαν και παρουσιάζονται οι j48, M5P, και LMT ταξινομητές.</h5>
 <pre class="r"><code>## j48
